@@ -1,12 +1,12 @@
 <?php
 
-namespace App\Entity;
+namespace App\Entity\Post;
 
 use Cocur\Slugify\Slugify;
 use Doctrine\ORM\Mapping as ORM;
 use App\Repository\PostRepository;
-use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 
 #[ORM\Entity(repositoryClass: PostRepository::class)]
 #[ORM\HasLifecycleCallbacks]
@@ -32,6 +32,12 @@ class Post
     #[Assert\NotBlank()]
     private string $content;
 
+    #[ORM\Column(type: 'string', length: 255)]
+    private string $state = Post::STATES[0];
+
+    #[ORM\OneToOne(inversedBy: 'post', targetEntity: Thumbnail::class, cascade: ['persist', 'remove'])]
+    private Thumbnail $thumbnail;
+
     #[ORM\Column(type:'datetime_immutable')]
     #[Assert\NotBlank()]
     private \DateTimeImmutable $createdAt;
@@ -39,9 +45,6 @@ class Post
     #[ORM\Column(type:'datetime_immutable')]
     #[Assert\NotBlank()]
     private \DateTimeImmutable $updatedAt;
-
-    #[ORM\Column(type: 'string', length: 255)]
-    private string $state = Post::STATES[0];
 
     public function __construct()
     {
@@ -109,6 +112,18 @@ class Post
     public function setState(string $state): self
     {
         $this->state = $state;
+
+        return $this;
+    }
+
+    public function getThumbnail(): ?Thumbnail
+    {
+        return $this->thumbnail;
+    }
+
+    public function setThumbnail(?Thumbnail $thumbnail): self
+    {
+        $this->thumbnail = $thumbnail;
 
         return $this;
     }
